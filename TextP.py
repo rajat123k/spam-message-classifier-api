@@ -1,54 +1,35 @@
-from sklearn.base import BaseEstimator, TransformerMixin
+# ----x----x----x----x----x----x----x
+#      creat this function in flask applicaton (__main__)
+# ----x----x----x----x----x----x----x
+# dont import this file in flask app only copy and paste this function in app.py
+
+
 import nltk
 from nltk.stem import PorterStemmer   # port stemmer
 import re
-import nltk
 import pandas as pd
+import string
 
+# get stop words
+with open('stopwords.txt', 'r') as f:
+  stop_words = f.read()
 
-class TextPreprocessor(BaseEstimator, TransformerMixin):
-    
-    def __init__(self, column, punctuation, stopwords):
-      self.column = column
-      self.punctuation = punctuation
-      self.stemmer = PorterStemmer()
-      self.stopwords = stopwords
-      patt = f'[{self.punctuation}]' + '|' + '\\b(' + f'{'|'.join(self.stopwords)}' + ')\\b'
-      self.stopw_punc_patt = re.compile(patt)
+stopwords = stop_words.split()
 
-    def fit(self, X=None, y=None):
-        # no learning from X
-        return self
+def preprocess_text(text):
+    # convert text to lower case
+    text = text.lower()
 
-    def transform(self, X):
-      '''transforming text Dataframes columns(string)'''
-      column = self.column
+    # remove punctuation and stopwords
+    patt = f'[{string.punctuation}]' + '|' + '\\b(' + f'{'|'.join(stopwords)}' + ')\\b'
+    text = re.sub(patt, ' ', text)
 
-      final_text = pd.Series(name=column)
-      assert isinstance(X, pd.DataFrame), 'passed variabale is not Dataframe'
+    # tokenize
+    text = nltk.word_tokenize(text)
 
-      for i in range(X.shape[0]):
-        try:
-          # Access elements by integer position using .iloc to handle non-contiguous indices
-          text = X[column].iloc[i]
-          # convert text to lower case
-          text = text.lower()
+    # stemming
+    stemmer = PorterStemmer()
+    text = [stemmer.stem(word) for word in text]
 
-          # remove punctuation and stopwords
-          text = self.stopw_punc_patt.sub(' ', text)
-
-          # tokenize
-          text = nltk.word_tokenize(text)
-
-          # stemming
-          text = [self.stemmer.stem(word) for word in text]
-
-          # convert text(list) into string
-          text = ' '.join(text)
-
-          # store transformed text
-          final_text[len(final_text)] = text
-        except:
-          print(text)
-          return 0
-      return final_text
+    # convert text(list) into string
+    return ' '.join(text)
