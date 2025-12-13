@@ -7,8 +7,8 @@ import string
 import pandas as pd
 
 # download nltk resources
-#nltk.download('stopwords')
-#nltk.download('punkt_tab')
+nltk.download('stopwords')
+nltk.download('punkt_tab')
 
 app = Flask(__name__)
 
